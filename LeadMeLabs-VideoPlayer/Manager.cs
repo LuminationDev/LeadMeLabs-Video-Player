@@ -176,8 +176,8 @@ namespace LeadMeLabs_VideoPlayer
         {
             if (Application.Current.MainWindow.WindowState == WindowState.Normal)
             {
-                Application.Current.MainWindow.WindowState = WindowState.Maximized;
                 Application.Current.MainWindow.WindowStyle = WindowStyle.None;
+                Application.Current.MainWindow.WindowState = WindowState.Maximized;
                 Application.Current.MainWindow.Activate();
             }
             else
@@ -225,7 +225,7 @@ namespace LeadMeLabs_VideoPlayer
         /// Load any video files that are in the local Video folder, adding these to the details object
         /// before sending the details object to LeadMe Labs.
         /// </summary>
-        private static void LoadLocalVideoFiles()
+        private static async void LoadLocalVideoFiles()
         {
             string[] files = Directory.GetFiles(folderPath);
 
@@ -238,6 +238,9 @@ namespace LeadMeLabs_VideoPlayer
                     details.levels[1].actions.Add(new Action { name = fileName, trigger = $"source,file://{filePath}" });
                 }
             }
+
+            // Wait while LeadMe updates the game name
+            await Task.Delay(3000);
 
             // Send the experience details on start up
             ParentPipeClient.Send(LogHandler, Details.Serialize(details));

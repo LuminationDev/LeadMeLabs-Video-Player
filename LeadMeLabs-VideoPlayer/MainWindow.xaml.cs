@@ -27,6 +27,10 @@ namespace LeadMeLabs_VideoPlayer
 			InitialiseMediaElement();
 			DataContext = this;
 			MainWindowInstance = this;
+			Topmost = true;
+
+			// Subscribe to the PreviewKeyDown event
+			PreviewKeyDown += MainWindow_PreviewKeyDown;
 		}
 
 		#region MediaElement Setup
@@ -58,7 +62,10 @@ namespace LeadMeLabs_VideoPlayer
 			{
 				// Play the media again
 				videoPlayer.Play();
-			}
+			} else
+            {
+				videoPlayer.Pause();
+            }
 		}
 
 		void Timer_Tick(object? sender, EventArgs e)
@@ -78,10 +85,20 @@ namespace LeadMeLabs_VideoPlayer
 				lblStatus.Content = "No file selected...";
 			}
 		}
-        #endregion
 
-        #region Media Controls
-        private bool isRepeat = false;
+		private void MainWindow_PreviewKeyDown(object sender, KeyEventArgs e)
+		{
+			// Check if the Escape key is pressed
+			if (e.Key == Key.Escape)
+			{
+				WindowStyle = WindowStyle.SingleBorderWindow;
+				WindowState = WindowState.Normal;
+			}
+		}
+		#endregion
+
+		#region Media Controls
+		private bool isRepeat = false;
 
 		public bool IsRepeat
 		{
