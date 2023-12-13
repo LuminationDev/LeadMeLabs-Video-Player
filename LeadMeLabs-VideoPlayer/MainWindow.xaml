@@ -3,7 +3,6 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:LeadMeLabs_VideoPlayer"
         mc:Ignorable="d"
         Title="LeadMeLabs Video" Height="450" Width="800"
         Background="Black"
@@ -19,21 +18,21 @@
 
     <Grid>
         <MediaElement
-            Name="videoPlayer"
+            Name="VideoPlayer"
             LoadedBehavior="Manual" 
-            Source="file://C:/Users/ecoad/Videos/Test/ayutthaya.mp4" 
+            Source="" 
             HorizontalAlignment="Stretch" 
             VerticalAlignment="Stretch" 
             Margin="0" />
 
-        <StackPanel Name="mediaControls" Visibility="Visible" Background="#40A9A9A9" VerticalAlignment="Bottom">
-            <Label Name="lblStatus" Content="Not playing..." Foreground="White" HorizontalContentAlignment="Center" />
+        <StackPanel Name="MediaControls" Visibility="Visible" Background="#40A9A9A9" VerticalAlignment="Bottom">
+            <Label Name="LblStatus" Content="Not playing..." Foreground="White" HorizontalContentAlignment="Center" />
 
-            <Slider x:Name="videoSlider"
+            <Slider x:Name="VideoSlider"
                 Margin="0, 0, 0, 5"
                 ValueChanged="VideoSlider_ValueChanged"
                 Minimum="0"
-                Maximum="{Binding ElementName=videoPlayer, Path=NaturalDuration.TimeSpan.TotalSeconds}"
+                Maximum="{Binding ElementName=VideoPlayer, Path=NaturalDuration.TimeSpan.TotalSeconds}"
                 IsMoveToPointEnabled="True"
                 Thumb.DragStarted="Slider_DragStarted"
                 Thumb.DragCompleted="Slider_DragCompleted"
@@ -80,9 +79,9 @@
             </Slider>
 
             <Grid>
-                <Button Name="btnOpen" Click="BtnOpen_Click" HorizontalAlignment="Left" Margin="25, 0, 0, 5" Style="{StaticResource CustomButtonStyle}">
+                <Button Name="BtnOpen" Click="BtnOpen_Click" HorizontalAlignment="Left" Margin="25, 0, 0, 5" Style="{StaticResource CustomButtonStyle}">
                     <Button.Content>
-                        <Image Source="/assets/open_document.png" Width="20" Height="20"/>
+                        <Image Source="/assets/screen_open_document.png" Width="20" Height="20"/>
                     </Button.Content>
                     <Button.ToolTip>
                         <ToolTip Content="Open a file" />
@@ -90,44 +89,66 @@
                 </Button>
 
                 <WrapPanel HorizontalAlignment="Center">
-                    <Button Name="btnStop" Click="BtnStop_Click" Style="{StaticResource CustomButtonStyle}">
+                    <Button Name="BtnStop" Click="BtnStop_Click" Style="{StaticResource CustomButtonStyle}">
                         <Button.Content>
-                            <Image Source="/assets/stop.png" Width="20" Height="20"/>
+                            <Image Source="/assets/video_stop.png" Width="20" Height="20"/>
                         </Button.Content>
                         <Button.ToolTip>
                             <ToolTip Content="Stop" />
                         </Button.ToolTip>
                     </Button>
 
-                    <Button Name="btnPlay" Click="BtnPlay_Click" Style="{StaticResource CustomButtonStyle}">
+                    <Button Name="BtnPlay" Click="BtnPlay_Click" Style="{StaticResource CustomButtonStyle}">
                         <Button.Content>
-                            <Image Source="/assets/play.png" Width="20" Height="20"/>
+                            <Image Source="/assets/video_play.png" Width="20" Height="20"/>
                         </Button.Content>
                         <Button.ToolTip>
                             <ToolTip Content="Play" />
                         </Button.ToolTip>
                     </Button>
 
-                    <Button Name="btnPause" Click="BtnPause_Click" Style="{StaticResource CustomButtonStyle}">
+                    <Button Name="BtnPause" Click="BtnPause_Click" Style="{StaticResource CustomButtonStyle}">
                         <Button.Content>
-                            <Image Source="/assets/pause.png" Width="20" Height="20"/>
+                            <Image Source="/assets/video_pause.png" Width="20" Height="20"/>
                         </Button.Content>
                         <Button.ToolTip>
                             <ToolTip Content="Pause" />
                         </Button.ToolTip>
                     </Button>
 
-                    <Button Name="btnRepeat" Click="BtnRepeat_Click" Style="{StaticResource CustomButtonStyle}">
+                    <Button Name="BtnRepeat" Click="BtnRepeat_Click" Style="{StaticResource CustomButtonStyle}">
                         <Button.Content>
                             <Image>
                                 <Image.Style>
                                     <Style TargetType="Image">
                                         <Setter Property="Height" Value="17"/>
                                         <Setter Property="Width" Value="17"/>
-                                        <Setter Property="Source" Value="assets/no_repeat.png" />
+                                        <Setter Property="Source" Value="assets/video_no_repeat.png" />
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding IsRepeat}" Value="True">
-                                                <Setter Property="Source" Value="assets/repeat.png" />
+                                                <Setter Property="Source" Value="assets/video_repeat.png" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Image.Style>
+                            </Image>
+                        </Button.Content>
+                        <Button.ToolTip>
+                            <ToolTip Content="Toggle video repeat" />
+                        </Button.ToolTip>
+                    </Button>
+                    
+                    <Button Name="BtnMute" Click="BtnMuted_Click" Style="{StaticResource CustomButtonStyle}">
+                        <Button.Content>
+                            <Image>
+                                <Image.Style>
+                                    <Style TargetType="Image">
+                                        <Setter Property="Height" Value="17"/>
+                                        <Setter Property="Width" Value="17"/>
+                                        <Setter Property="Source" Value="assets/sound_unmuted.png" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsMuted}" Value="True">
+                                                <Setter Property="Source" Value="assets/sound_muted.png" />
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>
@@ -140,9 +161,9 @@
                     </Button>
                 </WrapPanel>
 
-                <Button Name="btnFullscreen" Click="BtnFullscreen_Click" HorizontalAlignment="Right" Margin="0, 0, 25, 5" Style="{StaticResource CustomButtonStyle}">
+                <Button Name="BtnFullscreen" Click="BtnFullscreen_Click" HorizontalAlignment="Right" Margin="0, 0, 25, 5" Style="{StaticResource CustomButtonStyle}">
                     <Button.Content>
-                        <Image Source="/assets/fullscreen.png" Width="20" Height="20"/>
+                        <Image Source="/assets/screen_fullscreen.png" Width="20" Height="20"/>
                     </Button.Content>
                     <Button.ToolTip>
                         <ToolTip Content="Enter Fullscreen" />

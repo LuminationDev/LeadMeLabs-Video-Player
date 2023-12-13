@@ -133,6 +133,5 @@ $RECYCLE.BIN/
 _NCrunch*
 
 # Do not upload log files or filled out config.env
-!_logs/placeholder.txt
-_logs/*
-Station/_config/config.env
+nuget.config
+.idea/
