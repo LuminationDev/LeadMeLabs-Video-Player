@@ -1,0 +1,300 @@
+﻿<Window x:Class="LeadMeLabs_VideoPlayer.MVC.View.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="LeadMeLabs Video" Height="450" Width="800"
+        Background="Black"
+        MouseMove="Window_MouseMove">
+    
+    <Grid>
+        <MediaElement
+            Name="VideoPlayer"
+            LoadedBehavior="Manual" 
+            Source="" 
+            HorizontalAlignment="Stretch" 
+            VerticalAlignment="Stretch" 
+            Margin="0" />
+        
+        <!--Media Controls-->
+        <Grid Name="MediaControls" Visibility="Visible" Background="#50A9A9A9">
+            <Grid.Style>
+                <Style TargetType="Grid">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsControlVisible}" Value="True">
+                            <DataTrigger.EnterActions>
+                                <BeginStoryboard Storyboard="{StaticResource FadeIn}" />
+                            </DataTrigger.EnterActions>
+                            <DataTrigger.ExitActions>
+                                <BeginStoryboard Storyboard="{StaticResource FadeOut}" />
+                            </DataTrigger.ExitActions>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Grid.Style>
+            
+            <!--Screen controls-->
+            <Grid Height="90" VerticalAlignment="Top" HorizontalAlignment="Stretch">
+                <Grid.Background>
+                    <LinearGradientBrush StartPoint="0,1" EndPoint="0,0">
+                        <GradientStop Color="#901a1a1a" Offset="0.4"/>
+                        <GradientStop Color="#101a1a1a" Offset="0"/>
+                    </LinearGradientBrush>
+                </Grid.Background>
+                
+                <Grid.Style>
+                    <Style TargetType="Grid">
+                        <Setter Property="RenderTransform">
+                            <Setter.Value>
+                                <TranslateTransform Y="0"/>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsControlVisible}" Value="True">
+                                <DataTrigger.EnterActions>
+                                    <BeginStoryboard Storyboard="{StaticResource SlideDownTop}" />
+                                </DataTrigger.EnterActions>
+                                <DataTrigger.ExitActions>
+                                    <BeginStoryboard Storyboard="{StaticResource SlideUpTop}" />
+                                </DataTrigger.ExitActions>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Grid.Style>
+                
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/> <!-- Take up the remaining space --> 
+                    <ColumnDefinition Width="Auto"/> <!-- Auto-sized column for the TextBlock -->
+                </Grid.ColumnDefinitions>
+                
+                <WrapPanel Grid.Column="1" Margin="0, 20, 0, 0">
+                    <Button Command="{Binding OpenFileCommand}" HorizontalAlignment="Left" Margin="0, 0, 20, 0" Style="{StaticResource SecondaryButtonStyle}">
+                        <Button.Content>
+                            <Image Source="../../Assets/screen_open_document.png" Width="40" Height="40"/>
+                        </Button.Content>
+                        <Button.ToolTip>
+                            <ToolTip Content="Open a file" />
+                        </Button.ToolTip>
+                    </Button>
+                    
+                    <Button Command="{Binding RepeatCommand}" Margin="0, 0, 20, 0" Style="{StaticResource SecondaryButtonStyle}">
+                        <Button.Content>
+                            <Image>
+                                <Image.Style>
+                                    <Style TargetType="Image">
+                                        <Setter Property="Height" Value="40"/>
+                                        <Setter Property="Width" Value="40"/>
+                                        <Setter Property="Source" Value="../../Assets/video_no_repeat.png" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsRepeat}" Value="True">
+                                                <Setter Property="Source" Value="../../Assets/video_repeat.png" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Image.Style>
+                            </Image>
+                        </Button.Content>
+                        <Button.ToolTip>
+                            <ToolTip Content="Toggle video repeat" />
+                        </Button.ToolTip>
+                    </Button>
+                    
+                    <Button Command="{Binding MutedCommand}" Margin="0, 0, 20, 0" Style="{StaticResource SecondaryButtonStyle}">
+                        <Button.Content>
+                            <Image>
+                                <Image.Style>
+                                    <Style TargetType="Image">
+                                        <Setter Property="Height" Value="40"/>
+                                        <Setter Property="Width" Value="40"/>
+                                        <Setter Property="Source" Value="../../Assets/sound_unmuted.png" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsMuted}" Value="True">
+                                                <Setter Property="Source" Value="../../Assets/sound_muted.png" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Image.Style>
+                            </Image>
+                        </Button.Content>
+                        <Button.ToolTip>
+                            <ToolTip Content="Toggle video repeat" />
+                        </Button.ToolTip>
+                    </Button>
+                    
+                    <Button Command="{Binding FullscreenCommand}" HorizontalAlignment="Right" Margin="0, 0, 20, 0" Style="{StaticResource SecondaryButtonStyle}">
+                        <Button.Content>
+                            <Image>
+                                <Image.Style>
+                                    <Style TargetType="Image">
+                                        <Setter Property="Height" Value="40"/>
+                                        <Setter Property="Width" Value="40"/>
+                                        <Setter Property="Source" Value="../../Assets/screen_maximise.png" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsFullScreen}" Value="True">
+                                                <Setter Property="Source" Value="../../Assets/screen_normal.png" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Image.Style>
+                            </Image>
+                        </Button.Content>
+                        <Button.ToolTip>
+                            <ToolTip Content="Enter Fullscreen" />
+                        </Button.ToolTip>
+                    </Button>
+                </WrapPanel>
+            </Grid>
+            
+            <!--Primary video action buttons-->
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Orientation="Horizontal">
+                <StackPanel.Style>
+                    <Style TargetType="StackPanel">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsControlVisible}" Value="True">
+                                <DataTrigger.EnterActions>
+                                    <BeginStoryboard Storyboard="{StaticResource FadeIn}" />
+                                </DataTrigger.EnterActions>
+                                <DataTrigger.ExitActions>
+                                    <BeginStoryboard Storyboard="{StaticResource FadeOut}" />
+                                </DataTrigger.ExitActions>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </StackPanel.Style>
+                
+                <WrapPanel HorizontalAlignment="Center">
+                    <Button Command="{Binding RewindCommand}" Style="{StaticResource PrimaryButtonStyle}">
+                        <Button.Content>
+                            <Image Source="../../Assets/video_rewind_10.png" Width="100" Height="100" Opacity="0.9"/>
+                        </Button.Content>
+                        <Button.ToolTip>
+                            <ToolTip Content="Play" />
+                        </Button.ToolTip>
+                    </Button>
+                    
+                    <Button Command="{Binding TogglePlayPauseCommand}" 
+                            Margin="50, 0"
+                            Style="{StaticResource PrimaryButtonStyle}">
+                        <Button.Content>
+                            <Image Opacity="0.7">
+                                <Image.Style>
+                                    <Style TargetType="Image">
+                                        <Setter Property="Height" Value="100"/>
+                                        <Setter Property="Width" Value="100"/>
+                                        <Setter Property="Source" Value="../../Assets/video_play.png" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsPlaying}" Value="True">
+                                                <Setter Property="Source" Value="../../Assets/video_pause.png" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Image.Style>
+                            </Image>
+                        </Button.Content>
+                        <Button.ToolTip>
+                            <ToolTip Content="Enter Fullscreen" />
+                        </Button.ToolTip>
+                    </Button>
+                    
+                    <Button Command="{Binding SkipCommand}" Style="{StaticResource PrimaryButtonStyle}">
+                        <Button.Content>
+                            <Image Source="../../Assets/video_skip_10.png" Width="100" Height="100" Opacity="0.9"/>
+                        </Button.Content>
+                        <Button.ToolTip>
+                            <ToolTip Content="Play" />
+                        </Button.ToolTip>
+                    </Button>
+                </WrapPanel>
+            </StackPanel>
+            
+            <!--Time display and slider-->
+            <StackPanel VerticalAlignment="Bottom">
+                <StackPanel.Background>
+                    <LinearGradientBrush StartPoint="0,1" EndPoint="0,0">
+                        <GradientStop Color="#901a1a1a" Offset="0.7"/>
+                        <GradientStop Color="#101a1a1a" Offset="1"/>
+                    </LinearGradientBrush>
+                </StackPanel.Background>
+                <StackPanel.Style>
+                    <Style TargetType="StackPanel">
+                        <Setter Property="RenderTransform">
+                            <Setter.Value>
+                                <TranslateTransform Y="0"/>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsControlVisible}" Value="False">
+                                <DataTrigger.EnterActions>
+                                    <BeginStoryboard Storyboard="{StaticResource SlideUpBottom}" />
+                                </DataTrigger.EnterActions>
+                                <DataTrigger.ExitActions>
+                                    <BeginStoryboard Storyboard="{StaticResource SlideDownBottom}" />
+                                </DataTrigger.ExitActions>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </StackPanel.Style>
+                
+                <Slider x:Name="VideoSlider"
+                        Margin="0, 20, 0, 5"
+                        ValueChanged="VideoSlider_ValueChanged"
+                        Minimum="0"
+                        Maximum="{Binding ElementName=VideoPlayer, Path=NaturalDuration.TimeSpan.TotalSeconds}"
+                        IsMoveToPointEnabled="True"
+                        Thumb.DragStarted="Slider_DragStarted"
+                        Thumb.DragCompleted="Slider_DragCompleted"
+                        PreviewMouseLeftButtonDown="Slider_PreviewMouseLeftButtonDown">
+
+                    <Slider.Resources>
+                        <Style TargetType="Thumb">
+                            <Setter Property="Width" Value="15" />
+                            <Setter Property="Height" Value="15" />
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Thumb">
+                                        <Grid>
+                                            <Ellipse Width="{TemplateBinding Width}" Height="{TemplateBinding Height}">
+                                                <Ellipse.Fill>
+                                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                                        <GradientStop Color="#FFC4C4C4" Offset="0" />
+                                                        <GradientStop Color="#FFB2B2B2" Offset="0.4" />
+                                                        <GradientStop Color="#FFA8A8A8" Offset="0.6" />
+                                                        <GradientStop Color="#FFC4C4C4" Offset="1" />
+                                                    </LinearGradientBrush>
+                                                </Ellipse.Fill>
+                                            </Ellipse>
+                                            <Border BorderThickness="1" BorderBrush="#FFA8A8A8" CornerRadius="10" />
+                                        </Grid>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </Slider.Resources>
+
+                    <Slider.Template>
+                        <ControlTemplate TargetType="Slider">
+                            <Grid Margin="20, 0">
+                                <Rectangle x:Name="PART_Track" Height="5" Fill="Silver" RadiusX="2" RadiusY="2" />
+                                <Track x:Name="PART_SelectionRange">
+                                    <Track.Thumb>
+                                        <Thumb x:Name="Thumb" Background="Black" DragDelta="Thumb_DragDelta" />
+                                    </Track.Thumb>
+                                </Track>
+                            </Grid>
+                        </ControlTemplate>
+                    </Slider.Template>
+                </Slider>
+
+                <Grid>
+                    <Label Content="{Binding VideoTime, FallbackValue=Not playing...}" 
+                           Foreground="White" 
+                           FontWeight="Medium"
+                           FontSize="18"
+                           HorizontalContentAlignment="Left"
+                           Margin="15, 0, 0, 10"/>
+                </Grid>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

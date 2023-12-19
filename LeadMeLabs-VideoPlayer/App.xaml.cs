@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Windows;
+using LeadMeLabs_VideoPlayer.MVC.Controller;
+using LeadMeLabs_VideoPlayer.MVC.View;
 using Sentry;
 
 namespace LeadMeLabs_VideoPlayer;
@@ -20,7 +22,7 @@ public partial class App
         wnd.WindowState = WindowState.Maximized;
         
         // Start up the pipe server to receive commands from LeadMe Labs
-        Manager.InitialiseManager();
+        Controller.InitialiseManager();
 
         // Check for any arguments, [0] - generic cmd (always present), [1] - source, [2] - should repeat
         string[] args = Environment.GetCommandLineArgs();

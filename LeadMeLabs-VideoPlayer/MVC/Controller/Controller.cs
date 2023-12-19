@@ -1,16 +1,17 @@
-﻿using leadme_api;
-using Sentry;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
+using leadme_api;
+using LeadMeLabs_VideoPlayer.MVC.View;
+using Sentry;
 using Action = leadme_api.Action;
 
-namespace LeadMeLabs_VideoPlayer;
+namespace LeadMeLabs_VideoPlayer.MVC.Controller;
 
-public static class Manager
+public static class Controller
 {
     //List of the valid file types to try and load
     private static readonly List<string> ValidFileTypes = new() { ".mp4" };
