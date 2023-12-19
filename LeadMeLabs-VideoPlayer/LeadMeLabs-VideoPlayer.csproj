@@ -20,34 +20,60 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="assets\fullscreen.png">
+    <None Remove="assets\screen_fullscreen.png" />
+    <None Remove="assets\screen_open_document.png" />
+    <None Remove="assets\video_pause.png" />
+    <None Remove="assets\video_play.png" />
+    <None Remove="assets\video_repeat.png" />
+    <Content Include="Assets\screen_open_document.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="assets\no_repeat.png">
+    <Content Include="Assets\sound_muted.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="assets\open_document.png">
+    <Content Include="Assets\sound_unmuted.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="assets\pause.png">
+    <Content Include="Assets\video_no_repeat.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="assets\play.png">
+    <Content Include="Assets\video_pause.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="assets\repeat.png">
+    <Content Include="Assets\video_play.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="assets\stop.png">
+    <None Remove="assets\video_stop.png" />
+    <Content Include="Assets\video_repeat.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="videos\note.txt">
-      <Generator>MSBuild:Compile</Generator>
+    <Content Include="Assets\video_rewind_10.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\video_skip_10.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\video_stop.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="assets\sound_muted.png" />
+    <None Remove="assets\sound_unmuted.png" />
+    <None Remove="assets\video_no_repeat.png" />
+    <None Remove="Assets\screen_normal_screen.png" />
+    <None Remove="Assets\video_rewind_10.png" />
+    <None Remove="Assets\video_skip_10.png" />
+    <None Remove="Assets\screen_maximise.png" />
+    <Content Include="Assets\screen_maximise.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Assets\screen_normal.png" />
+    <Content Include="Assets\screen_normal.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="leadme_api" Version="1.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Sentry" Version="3.33.0" />
   </ItemGroup>
@@ -57,6 +83,21 @@
       <HintPath>..\..\.Net Standard 2.0\leadme_api\leadme_api\bin\Release\netstandard2.0\leadme_api.dll</HintPath>
       <CopyLocal>True</CopyLocal>
     </Reference>
+  </ItemGroup>
+
+
+
+  <ItemGroup>
+    <Page Update="MVC\View\MainWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <XamlRuntime>Wpf</XamlRuntime>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Themes\PrimaryButtonStyles.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <XamlRuntime>Wpf</XamlRuntime>
+      <SubType>Designer</SubType>
+    </Page>
   </ItemGroup>
 
 </Project>

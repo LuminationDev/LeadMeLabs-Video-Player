@@ -1,0 +1,43 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=System.Runtime">
+    
+    <system:Double x:Key="SlideOffSetBottom">200</system:Double>
+    <system:Double x:Key="SlideOffSetTop">-100</system:Double>
+
+    <Storyboard x:Key="SlideUpBottom">
+        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                         From="0" To="{StaticResource SlideOffSetBottom}"
+                         Duration="0:0:0.3" />
+    </Storyboard>
+
+    <Storyboard x:Key="SlideDownBottom">
+        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                         From="{StaticResource SlideOffSetBottom}" To="0" 
+                         Duration="0:0:0.3" />
+    </Storyboard>
+            
+    <Storyboard x:Key="SlideDownTop">
+        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                         From="{StaticResource SlideOffSetTop}" To="0"
+                         Duration="0:0:0.3" />
+    </Storyboard>
+
+    <Storyboard x:Key="SlideUpTop">
+        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                         From="0" To="{StaticResource SlideOffSetTop}"
+                         Duration="0:0:0.3" />
+    </Storyboard>
+            
+    <Storyboard x:Key="FadeIn">
+        <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                         To="1"
+                         Duration="0:0:0.3" />
+    </Storyboard>
+            
+    <Storyboard x:Key="FadeOut">
+        <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                         To="0"
+                         Duration="0:0:0.3" />
+    </Storyboard>
+</ResourceDictionary>
