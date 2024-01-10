@@ -37,10 +37,10 @@ public partial class App
         }
 
         if (args.Length <= 2) return;
-        if (args[2].Equals("true"))
-        {
-            wnd.IsRepeat = true;
-        }
+        wnd.IsRepeat = args[2].Equals("true");
+        
+        if (args.Length <= 3) return;
+        wnd.IsMuted = args[3].Equals("true");
     }
 
     private void InitSentry()

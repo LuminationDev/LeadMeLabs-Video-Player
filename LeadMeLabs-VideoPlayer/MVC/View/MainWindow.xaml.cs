@@ -147,6 +147,11 @@ public sealed partial class MainWindow: INotifyPropertyChanged
 		VideoPlayer.MediaOpened += VideoPlayer_MediaOpened;
 		VideoPlayer.MediaEnded += MediaElement_MediaEnded;
 
+		InitialiseTickTimer();
+    }
+
+	private void InitialiseTickTimer()
+	{
 		_videoDurationTimer = new()
 		{
 			Interval = TimeSpan.FromSeconds(1)
@@ -175,6 +180,7 @@ public sealed partial class MainWindow: INotifyPropertyChanged
 		{
 			// Play the media again
 			VideoPlayer.Play();
+			InitialiseTickTimer();
 		} else
         {
 			VideoPlayer.Pause();
