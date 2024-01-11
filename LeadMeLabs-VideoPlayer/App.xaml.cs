@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Windows;
 using LeadMeLabs_VideoPlayer.MVC.Controller;
 using LeadMeLabs_VideoPlayer.MVC.View;
@@ -36,10 +37,24 @@ public partial class App
             wnd.VideoPlayer.Play();
         }
 
-        if (args.Length <= 2) return;
-        if (args[2].Equals("true"))
+        // Define key arguments and corresponding actions
+        Dictionary<string, Action> actions = new Dictionary<string, Action>
         {
-            wnd.IsRepeat = true;
+            { "-mute", () => { wnd.IsMuted = true; } },
+            { "-repeat", () => { wnd.IsRepeat = true; } },
+            { "-norepeat", () => { wnd.IsRepeat = false; } }
+            
+            /*Space to add more actions*/
+        };
+        
+        // Search for key arguments and execute their actions
+        for (int i = 2; i < args.Length; i++)
+        {
+            string lowerArg = args[i].ToLower();
+            if (actions.TryGetValue(lowerArg, out var action))
+            {
+                action.Invoke();
+            }
         }
     }
 
