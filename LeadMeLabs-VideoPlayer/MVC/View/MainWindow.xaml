@@ -18,7 +18,8 @@
             Margin="0" />
         
         <!--Media Controls-->
-        <Grid Name="MediaControls" Visibility="Visible" Background="#50A9A9A9">
+        <Grid Name="MediaControls" Visibility="Visible" Background="#50A9A9A9" >
+            
             <Grid.Style>
                 <Style TargetType="Grid">
                     <Style.Triggers>
@@ -33,6 +34,9 @@
                     </Style.Triggers>
                 </Style>
             </Grid.Style>
+            
+            <!--Global play/pause-->
+            <Button Command="{Binding TogglePlayPauseCommand}" Style="{x:Null}" Opacity="0"/>
             
             <!--Screen controls-->
             <Grid Height="90" VerticalAlignment="Top" HorizontalAlignment="Stretch">
