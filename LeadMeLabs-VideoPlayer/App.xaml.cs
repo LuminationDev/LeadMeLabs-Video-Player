@@ -32,9 +32,7 @@ public partial class App
         {
             wnd.WindowStyle = WindowStyle.None;
             wnd.WindowState = WindowState.Maximized;
-
-            wnd.VideoPlayer.Source = new Uri(args[1]);
-            wnd.VideoPlayer.Play();
+            MVC.View.MainWindow.LoadVideo(args[1]);
         }
 
         // Define key arguments and corresponding actions

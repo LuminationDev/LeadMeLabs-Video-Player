@@ -2,11 +2,15 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using leadme_api;
 using LeadMeLabs_VideoPlayer.MVC.View;
 using Sentry;
+using MediaInfo;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
 using Action = leadme_api.Action;
 
 namespace LeadMeLabs_VideoPlayer.MVC.Controller;
@@ -15,6 +19,8 @@ public static class Controller
 {
     //List of the valid file types to try and load
     private static readonly List<string> ValidFileTypes = new() { ".mp4" };
+
+    private static Timer? _syncTimer;
 
     //Path to the specialised LeadMe video folder
     private static readonly string FolderPath = GetVideoFolder();
@@ -37,6 +43,12 @@ public static class Controller
     }
 
     #region Pipe Server
+
+    public static void SendMessage(string message)
+    {
+        ParentPipeClient.Send(LogHandler, message);
+    }
+    
     /// <summary>
     /// Stop the current pipe server, wait for a set period and then restart the server.
     /// </summary>
@@ -117,13 +129,17 @@ public static class Controller
                 case "media":
                     HandleMediaAction(action);
                     break;
-
+                
                 case "source":
                     LoadSource(action);
                     break;
 
                 case "window":
                     HandleWindowAction(action);
+                    break;
+                
+                case "sync":
+                    HandleSync(action);
                     break;
             }
         });
@@ -159,9 +175,7 @@ public static class Controller
     {
         try
         {
-            MainWindow.MediaElementInstance.Position = TimeSpan.Zero;
-            MainWindow.MediaElementInstance.Source = new Uri(selectedFilePath);
-            MainWindow.MediaElementInstance.Play();
+            MainWindow.LoadVideo(selectedFilePath);
         }
         catch (Exception ex)
         {
@@ -182,6 +196,95 @@ public static class Controller
         }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    private static void HandleSync(string action)
+    {
+        Console.WriteLine("About to sync: " + DateTime.Now);
+        
+        //'time' action has an additional parameter of the time to set it to.
+        string[] tokens = action.Split(',', 2);
+        
+        //if there is not time specified default to 0
+        var time = tokens.Length < 2 ? 0 : Convert.ToInt32(tokens[1]);
+
+        // Calculate the initial target time (next 5-second increment)
+        DateTime targetTime = GetNext5SecondIncrement();
+
+        // Create and start the synchronization
+        System.Action? task = action switch
+        {
+            "start" =>
+                //Start the current video back at 0:00
+                () => Application.Current.Dispatcher.Invoke(delegate
+                {
+                    MainWindow.MainWindowInstance.VideoPlayer.Position = TimeSpan.Zero;
+                }),
+            "time" =>
+                //Set the current video to X seconds (supplied by the tablet)
+                () => Application.Current.Dispatcher.Invoke(delegate
+                {
+                    MainWindow.MainWindowInstance.VideoPlayer.Position = TimeSpan.FromSeconds(time);
+                }),
+            _ => null
+        };
+
+        if (task == null) return;
+        
+        Sync(targetTime, _ => DateTime.Now >= targetTime, task);
+    }
+    
+    /// <summary>
+    /// Calculates the next 5-second increment with a minimum 1-second delay
+    /// based on the current system time.
+    /// </summary>
+    /// <returns>The calculated target time for the next 5-second increment.</returns>
+    private static DateTime GetNext5SecondIncrement()
+    {
+        DateTime now = DateTime.Now;
+        int seconds = now.Second;
+        int remainder = seconds % 5;
+
+        // Calculate the next 5-second increment
+        int nextIncrement = remainder == 0 ? 5 : 5 - remainder;
+        DateTime nextTargetTime = now.AddSeconds(nextIncrement);
+        
+        // Ensure the target time is at least 1 second in the future
+        if ((nextTargetTime - now).TotalSeconds < 1)
+        {
+            nextTargetTime = nextTargetTime.AddSeconds(5);
+        }
+
+        return nextTargetTime;
+    }
+    
+    /// <summary>
+    /// Synchronizes the execution of a task at the specified target time using a Timer.
+    /// </summary>
+    /// <param name="targetTime">The target time for task execution.</param>
+    /// <param name="shouldExecute">A condition determining whether the task should be executed.</param>
+    /// <param name="task">The task to execute.</param>
+    private static void Sync(DateTime targetTime, Func<DateTime, bool> shouldExecute, System.Action task)
+    {
+        // Calculate the initial delay until the target time
+        long initialDelay = (long)(targetTime - DateTime.Now).TotalMilliseconds;
+
+        if (initialDelay < 0)
+        {
+            return;
+        }
+
+        // Set up a timer to run the task at the specified time
+        _syncTimer = new Timer(_ =>
+        {
+            if (!shouldExecute(DateTime.Now)) return;
+            
+            task();
+            _syncTimer?.Dispose(); // Task completed, dispose the timer
+        }, null, initialDelay, Timeout.Infinite);
+    }
+    
     /// <summary>
     /// Toggle the main window between full screen and normal. Depending on what the latest value of the
     /// window state is.
@@ -224,6 +327,8 @@ public static class Controller
                 trigger = "",
                 actions = new List<Action>
                 {
+                    new Action { name = "Sync", trigger = "sync,start" },
+                    new Action { name = "Sync Time", trigger = "sync,time" },
                     new Action { name = "Fullscreen", trigger = "window,fullscreen" },
                     new Action { name = "Repeat", trigger = "media,repeat" },
                     new Action { name = "Mute", trigger = "media,mute" },
@@ -238,7 +343,7 @@ public static class Controller
             }
         }
     };
-
+    
     /// <summary>
     /// Load any video files that are in the local Video folder, adding these to the details object
     /// before sending the details object to LeadMe Labs.
@@ -250,10 +355,25 @@ public static class Controller
         foreach (string filePath in files)
         {
             string fileName = Path.GetFileName(filePath);
-            if (ValidFileTypes.Contains(Path.GetExtension(filePath)))
+            string extension = Path.GetExtension(filePath);
+            if (ValidFileTypes.Contains(extension))
             {
+                // Calculate video duration
+                int duration = GetVideoDuration(filePath);
+                Console.WriteLine($"{fileName} - Duration: " + duration);
+                
                 // Add to the details being sent to LeadMe
-                Details.levels[1].actions.Add(new Action { name = fileName, trigger = $"source,file://{filePath}" });
+                Details.levels[1].actions.Add(new Action
+                {
+                    name = fileName, 
+                    trigger = $"source,file://{filePath}", 
+                    extra = new JArray(
+                        new JObject(
+                            new JProperty("fileType", extension), 
+                            new JProperty("duration", duration)
+                        )
+                    )
+                });
             }
         }
 
@@ -262,6 +382,31 @@ public static class Controller
 
         // Send the experience details on start up
         ParentPipeClient.Send(LogHandler, Details.Serialize(Details));
+    }
+    
+    /// <summary>
+    /// Gets the duration of a video file using the MediaInfo library.
+    /// </summary>
+    /// <param name="filePath">The path to the video file.</param>
+    /// <returns>The duration of the video in seconds, or 0 if unsuccessful.</returns>
+    private static int GetVideoDuration(string filePath)
+    {
+        try
+        {
+            // Create a logger instance for logging purposes
+            ILogger logger = LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger<MediaInfoWrapper>();
+        
+            // Use MediaInfoWrapper to obtain video duration
+            var media = new MediaInfoWrapper(filePath, logger);
+            return media.Success ? media.Duration : 0;
+        }
+        catch (Exception ex)
+        {
+            // Log the exception using Sentry for monitoring purposes
+            SentrySdk.CaptureMessage($"Unable to calculate duration from ({filePath}), Error: {ex}");
+        }
+
+        return 0;
     }
     #endregion
 }
