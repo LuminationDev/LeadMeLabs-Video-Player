@@ -355,12 +355,29 @@ public sealed partial class MainWindow: INotifyPropertyChanged
 		
 		// Retrieve the selected file path
 		string selectedFilePath = openFileDialog.FileName;
- 
+
+		// Load the video and send back the new (current) source
+		LoadVideo(selectedFilePath);
+	}
+
+	/// <summary>
+	/// A centralised function to load a video source into the media player. Onload the source is then sent via the
+	/// pipe server to LeadMe (if operating) to update the current source information.
+	/// </summary>
+	/// <param name="filePath"></param>
+	public static void LoadVideo(string filePath)
+	{
+		// Set the time position to zero
+		MediaElementInstance.Position = TimeSpan.Zero;
+		
 		// Set the MediaElement source to the selected file
-		VideoPlayer.Source = new Uri(selectedFilePath);
+		MediaElementInstance.Source = new Uri(filePath);
  
 		// Play the video
-		VideoPlayer.Play();
+		MediaElementInstance.Play();
+		
+		// Send a message through the pipe server to update the currently selected source
+		Controller.Controller.SendMessage(filePath);
 	}
  
 	/// <summary>
