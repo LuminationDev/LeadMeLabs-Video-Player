@@ -70,10 +70,11 @@
     <Content Include="Assets\screen_normal.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Remove="leadme_config.json" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="leadme_api" Version="1.0.1" />
+    <PackageReference Include="leadme_api" Version="1.0.2" />
     <PackageReference Include="MediaInfo.Wrapper.Core" Version="21.9.3" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />

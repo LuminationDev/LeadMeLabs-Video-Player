@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -22,8 +23,8 @@ public static class Controller
 
     private static Timer? _syncTimer;
 
-    //Path to the specialised LeadMe video folder
-    private static readonly string FolderPath = GetVideoFolder();
+    //Path to the specialised LeadMe video folder (only loads non-VR videos)
+    private static readonly string FolderPath = Path.Join(GetVideoFolder(), "Regular");
 
     private static string GetVideoFolder()
     {
@@ -38,15 +39,19 @@ public static class Controller
     /// </summary>
     public static void InitialiseManager()
     {
-        LoadLocalVideoFiles();
         PipeServer.Run(LogHandler, PauseHandler, ResumeHandler, ShutdownHandler, DetailsHandler, ActionHandler);
+        LoadLocalVideoFiles();
     }
 
     #region Pipe Server
 
+    [MethodImpl(MethodImplOptions.Synchronized)]
     public static void SendMessage(string message)
     {
         ParentPipeClient.Send(LogHandler, message);
+        
+        // Wait a small delay before sending the next message
+        Task.Delay(500).Wait();
     }
     
     /// <summary>
@@ -79,6 +84,7 @@ public static class Controller
         {
             MainWindow.MediaElementInstance.Pause();
         });
+        MainWindow.UpdateVideoDetails("videoState", PlaybackState.Paused.ToString());
     }
 
     /// <summary>
@@ -90,6 +96,7 @@ public static class Controller
         {
             MainWindow.MediaElementInstance.Play();
         });
+        MainWindow.UpdateVideoDetails("videoState", PlaybackState.Playing.ToString());
     }
 
     /// <summary>
@@ -130,6 +137,10 @@ public static class Controller
                     HandleMediaAction(action);
                     break;
                 
+                case "time":
+                    HandleTimeAction(action);
+                    break;
+                
                 case "source":
                     LoadSource(action);
                     break;
@@ -154,7 +165,9 @@ public static class Controller
         {
             case "stop":
                 MainWindow.MediaElementInstance.Stop();
-                MainWindow.MediaElementInstance.Source = null;
+                MainWindow.MediaElementInstance.Position = TimeSpan.Zero;
+                MainWindow.MainWindowInstance.VideoSlider.Value = 0;
+                MainWindow.UpdateVideoDetails("videoState", PlaybackState.Stopped.ToString());
                 break;
             case "repeat":
                 MainWindow.MainWindowInstance.IsRepeat = !MainWindow.MainWindowInstance.IsRepeat;
@@ -165,6 +178,29 @@ public static class Controller
             case "unmute":
                 MainWindow.MainWindowInstance.IsMuted = false;
                 break;
+            case "skipForwards":
+                MainWindow.MainWindowInstance.ChangeTime(true);
+                break;
+            case "skipBackwards":
+                MainWindow.MainWindowInstance.ChangeTime(false);
+                break;
+        }
+    }
+
+    /**
+     * An incoming message is asking to modify the time of the current video. Update the media player to reflect this
+     * new time if possible.
+     */
+    private static void HandleTimeAction(string time)
+    {
+        try
+        {
+            int value = int.Parse(time);
+            MainWindow.MediaElementInstance.Position = TimeSpan.FromSeconds(value);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"Could not parse: {time}. {e}");
         }
     }
 
@@ -317,6 +353,7 @@ public static class Controller
         {
             new GlobalAction { name = "Pause", trigger = "pause" },
             new GlobalAction { name = "Resume", trigger = "resume" },
+            new GlobalAction { name = "Stop", trigger = "stop" },
             new GlobalAction { name = "Shutdown", trigger = "shutdown" }
         },
         levels = new List<Level>
@@ -360,7 +397,6 @@ public static class Controller
             {
                 // Calculate video duration
                 int duration = GetVideoDuration(filePath);
-                Console.WriteLine($"{fileName} - Duration: " + duration);
                 
                 // Add to the details being sent to LeadMe
                 Details.levels[1].actions.Add(new Action
@@ -381,7 +417,7 @@ public static class Controller
         await Task.Delay(3000);
 
         // Send the experience details on start up
-        ParentPipeClient.Send(LogHandler, Details.Serialize(Details));
+        SendMessage(Details.Serialize(Details));
     }
     
     /// <summary>
