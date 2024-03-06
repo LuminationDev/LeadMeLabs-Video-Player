@@ -8,8 +8,16 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using LeadMeLabs_VideoPlayer.Core;
 using Microsoft.Win32;
+using Newtonsoft.Json.Linq;
 
 namespace LeadMeLabs_VideoPlayer.MVC.View;
+
+public enum PlaybackState
+{
+	Playing,
+	Paused,
+	Stopped
+}
 
 /// <summary>
 /// Interaction logic for MainWindow.xaml
@@ -88,6 +96,7 @@ public sealed partial class MainWindow: INotifyPropertyChanged
 		{
 			if (_isRepeat == value) return;
 			_isRepeat = value;
+			UpdateVideoDetails("isRepeat", value);
 			OnPropertyChanged(nameof(IsRepeat));
 		}
 	}
@@ -101,6 +110,7 @@ public sealed partial class MainWindow: INotifyPropertyChanged
 			if (_isMuted == value) return;
 			VideoPlayer.IsMuted = value;
 			_isMuted = value;
+			UpdateVideoDetails("isMuted", value);
 			OnPropertyChanged(nameof(IsMuted));
 		}
 	}
@@ -113,6 +123,7 @@ public sealed partial class MainWindow: INotifyPropertyChanged
 		{
 			if (_fullScreen == value) return;
 			_fullScreen = value;
+			UpdateVideoDetails("fullScreen", value);
 			OnPropertyChanged(nameof(IsFullScreen));
 		}
 	}
@@ -127,6 +138,47 @@ public sealed partial class MainWindow: INotifyPropertyChanged
 			_videoTime = value;
 			OnPropertyChanged(nameof(VideoTime));
 		}
+	}
+
+	/**
+	 * An object that holds various details about the Video Player that are not included in the primary function. If any
+	 * of them are updated the whole object is send to the tablet, this way extra details can be added at anytime.
+	 * This can include:
+	 *		_isRepeat
+	 *		_isMuted
+	 *		_fullScreen
+	 *		videoState - the current playback state
+	 */
+	private static JObject _videoDetails = new(
+			new JProperty("isRepeat", true),
+			new JProperty("isMuted", false),
+			new JProperty("fullScreen", true),
+			new JProperty("videoState", "")
+		);
+	
+	private static JObject VideoDetails
+	{
+		get => _videoDetails;
+		set
+		{
+			if (_videoDetails.ToString() == value.ToString()) return;
+			_videoDetails = value;
+
+			Controller.Controller.SendMessage("videoPlayerDetails," + _videoDetails);
+		}
+	}
+
+	/// <summary>
+	/// Update a key's value in the VideoDetails object, the object requires a deep clone and being set again
+	/// as a full object instead of just changing a single value otherwise the observer pattern won't be triggered.
+	/// </summary>
+	/// <param name="key">A string of the token to change</param>
+	/// <param name="value">A JToken of the new value</param>
+	public static void UpdateVideoDetails(string key, JToken value)
+	{
+		JToken details = VideoDetails.DeepClone();
+		details[key] = value;
+		VideoDetails = (JObject)details;
 	}
 
 	//Implement the INotifyPropertyChanged interface
@@ -201,6 +253,11 @@ public sealed partial class MainWindow: INotifyPropertyChanged
 
 			// Update the slider value to reflect the current video position
 			VideoSlider.Value = VideoPlayer.Position.TotalSeconds;
+			
+			//TODO if the pipe server is not sending messages then this may backup??
+			// Send a message through the pipe server to update the current time
+			int totalSeconds = Convert.ToInt32(VideoPlayer.Position.TotalSeconds);
+			Controller.Controller.SendMessage("videoTime," + totalSeconds);
 		}
 		else
 		{
@@ -298,15 +355,15 @@ public sealed partial class MainWindow: INotifyPropertyChanged
 	/// Changes the playback position of the video by skipping forward or rewinding by 10 seconds.
 	/// </summary>
 	/// <param name="skip">True to skip forward, false to rewind.</param>
-	private void ChangeTime(bool skip)
+	public void ChangeTime(bool skip)
 	{
-		double skipSeconds = 10;
-
 		if (VideoPlayer.Source == null) return;
 
 		if (skip)
 		{
-			// Check if skipping 10 seconds would go beyond the video's duration
+			double skipSeconds = 30;
+			
+			// Check if skipping 30 seconds would go beyond the video's duration
 			if (VideoPlayer.Position.TotalSeconds + skipSeconds < VideoPlayer.NaturalDuration.TimeSpan.TotalSeconds)
 			{
 				VideoPlayer.Position = VideoPlayer.Position.Add(TimeSpan.FromSeconds(skipSeconds));
@@ -319,6 +376,8 @@ public sealed partial class MainWindow: INotifyPropertyChanged
 		}
 		else
 		{
+			double skipSeconds = 10;
+			
 			// Check if rewinding 10 seconds would go before the start of the video
 			if (VideoPlayer.Position.TotalSeconds - skipSeconds > 0)
 			{
@@ -372,12 +431,22 @@ public sealed partial class MainWindow: INotifyPropertyChanged
 		
 		// Set the MediaElement source to the selected file
 		MediaElementInstance.Source = new Uri(filePath);
- 
+		
 		// Play the video
 		MediaElementInstance.Play();
 		
+		// Check if the string starts with "file://"
+		if (filePath.StartsWith("file://"))
+		{
+			// Remove "file://" prefix
+			filePath = filePath.Substring(7); // Remove the first 7 characters
+		}
+		
 		// Send a message through the pipe server to update the currently selected source
-		Controller.Controller.SendMessage(filePath);
+		Controller.Controller.SendMessage($"videoActive,{filePath}");
+		
+		// Send a message through the pipe server to update the current playback state
+		UpdateVideoDetails("videoState", PlaybackState.Playing.ToString());
 	}
  
 	/// <summary>
@@ -388,10 +457,14 @@ public sealed partial class MainWindow: INotifyPropertyChanged
 	{
 		// Stop the media playback
 		VideoPlayer.Stop();
- 
-		// Set the MediaElement source to null or an empty Uri
-		VideoPlayer.Source = null;
+		VideoPlayer.Position = TimeSpan.Zero;
+		
+		// Set the MediaElement back to 0
+		VideoSlider.Value = 0;
 		IsPlaying = false;
+		
+		// Send a message through the pipe server to update the current state
+		UpdateVideoDetails("videoState", PlaybackState.Stopped.ToString());
 	}
 	
 	/// <summary>
@@ -412,6 +485,10 @@ public sealed partial class MainWindow: INotifyPropertyChanged
 			VideoPlayer.Play();
 			IsPlaying = true;
 		}
+		
+		PlaybackState state = IsPlaying ? PlaybackState.Playing : PlaybackState.Paused;
+		// Send a message through the pipe server to update the current state
+		UpdateVideoDetails("videoState", state.ToString());
 	}
  
 	/// <summary>
