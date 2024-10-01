@@ -39,6 +39,8 @@ public sealed partial class MainWindow: INotifyPropertyChanged
 	public RelayCommand RewindCommand { get; }
 	public RelayCommand SkipCommand { get; }
 	
+	public bool StartPaused = false;
+	
 	public MainWindow()
 	{
 		InitializeComponent();
@@ -216,8 +218,15 @@ public sealed partial class MainWindow: INotifyPropertyChanged
 	{
 		// Set the maximum value of the slider to the total duration of the video
 		VideoSlider.Maximum = VideoPlayer.NaturalDuration.TimeSpan.TotalSeconds;
-
-		IsPlaying = true;
+		
+		if (StartPaused && VideoPlayer.CanPause)
+		{
+			VideoPlayer.Pause();
+		}
+		else
+		{
+			IsPlaying = true;
+		}
 	}
 
 	private void MediaElement_MediaEnded(object sender, RoutedEventArgs e)
@@ -403,7 +412,7 @@ public sealed partial class MainWindow: INotifyPropertyChanged
             InitialDirectory = @"C:\",
  
             // Set the file filter (optional)
-            Filter = "Video Files (*.mp4;*.avi)|*.mp4;*.avi|All Files (*.*)|*.*"
+            Filter = "Video Files (*.mp4;*.avi;*.vlc)|*.mp4;*.vlc;*.avi|All Files (*.*)|*.*"
         };
  
         // Show the dialog and wait for the user's selection

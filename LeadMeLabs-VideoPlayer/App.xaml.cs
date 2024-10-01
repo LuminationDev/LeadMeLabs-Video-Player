@@ -41,7 +41,8 @@ public partial class App
         {
             { "-mute", () => { wnd.IsMuted = true; } },
             { "-repeat", () => { wnd.IsRepeat = true; } },
-            { "-norepeat", () => { wnd.IsRepeat = false; } }
+            { "-norepeat", () => { wnd.IsRepeat = false; } },
+            { "-paused", () => { wnd.StartPaused = true; } }
             
             /*Space to add more actions*/
         };
