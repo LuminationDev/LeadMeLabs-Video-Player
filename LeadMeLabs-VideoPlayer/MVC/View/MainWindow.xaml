@@ -9,16 +9,21 @@
         MouseMove="Window_MouseMove">
     
     <Grid>
-        <MediaElement
-            Name="VideoPlayer"
-            LoadedBehavior="Manual" 
-            Source="" 
-            HorizontalAlignment="Stretch" 
-            VerticalAlignment="Stretch" 
-            Margin="0" />
+        <Grid ZIndex="1" HorizontalAlignment="Stretch" 
+              VerticalAlignment="Stretch" 
+              Margin="0">
+            <MediaElement
+                Name="VideoPlayer"
+                LoadedBehavior="Manual" 
+                Source="" 
+                HorizontalAlignment="Stretch" 
+                VerticalAlignment="Stretch" 
+                Margin="0"
+            />
+        </Grid>
         
         <!--Media Controls-->
-        <Grid Name="MediaControls" Visibility="Visible" Background="#50A9A9A9" >
+        <Grid Name="MediaControls" Visibility="Visible" Background="#50A9A9A9" ZIndex="2" >
             
             <Grid.Style>
                 <Style TargetType="Grid">
