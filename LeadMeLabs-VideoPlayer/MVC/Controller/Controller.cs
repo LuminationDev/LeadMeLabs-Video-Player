@@ -19,7 +19,7 @@ namespace LeadMeLabs_VideoPlayer.MVC.Controller;
 public static class Controller
 {
     //List of the valid file types to try and load
-    private static readonly List<string> ValidFileTypes = new() { ".mp4" };
+    private static readonly List<string> ValidFileTypes = new() { ".mp4", ".avi", ".vlc" };
 
     private static Timer? _syncTimer;
 
@@ -387,8 +387,9 @@ public static class Controller
     /// </summary>
     private static async void LoadLocalVideoFiles()
     {
+        if (!Directory.Exists(FolderPath)) return;
+        
         string[] files = Directory.GetFiles(FolderPath);
-
         foreach (string filePath in files)
         {
             string fileName = Path.GetFileName(filePath);
@@ -412,10 +413,10 @@ public static class Controller
                 });
             }
         }
-
+    
         // Wait while LeadMe updates the game name
         await Task.Delay(3000);
-
+    
         // Send the experience details on start up
         SendMessage(Details.Serialize(Details));
     }
@@ -441,7 +442,7 @@ public static class Controller
             // Log the exception using Sentry for monitoring purposes
             SentrySdk.CaptureMessage($"Unable to calculate duration from ({filePath}), Error: {ex}");
         }
-
+    
         return 0;
     }
     #endregion
